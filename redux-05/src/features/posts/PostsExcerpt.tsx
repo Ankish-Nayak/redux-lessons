@@ -1,10 +1,11 @@
-import { PostI } from "./postsSlice";
-import PostAuthor from "./PostAuthor";
-import TimeAgo from "./TimeAgo";
-import ReactionButtons from "./ReactionButtons";
+import { memo } from "react";
 import { Link } from "react-router-dom";
+import PostAuthor from "./PostAuthor";
+import ReactionButtons from "./ReactionButtons";
+import TimeAgo from "./TimeAgo";
+import { PostI } from "./postsSlice";
 
-const PostsExcerpt = ({ post }: { post: PostI }) => {
+let PostsExcerpt = ({ post }: { post: PostI }) => {
   return (
     <article>
       <h3>{post.title}</h3>
@@ -18,5 +19,7 @@ const PostsExcerpt = ({ post }: { post: PostI }) => {
     </article>
   );
 };
+
+PostsExcerpt = memo(PostsExcerpt) as typeof PostsExcerpt;
 
 export default PostsExcerpt;
