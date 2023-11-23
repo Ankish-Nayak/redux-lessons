@@ -14,10 +14,6 @@ const UserPage = () => {
   const postsForUser = useSelector((state: RootState) =>
     selectPostsByUser(state, userId),
   );
-  // const postsForUser = useSelector((state: RootState) => {
-  //   const allPosts = selectAllPosts(state);
-  //   return allPosts.filter((post) => post.userId === userId);
-  // });
 
   const postTitles = postsForUser.map((post) => {
     return (
