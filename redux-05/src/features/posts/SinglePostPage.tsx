@@ -7,14 +7,12 @@ import { RootState } from "../../app/store";
 import { useParams, Link } from "react-router-dom";
 
 const SinglePostPage = () => {
-  const { postId } = useParams();
+  const { postId } = useParams() as { postId: string };
   console.log("rendered");
 
-  const post = postId
-    ? useSelector((state: RootState) =>
-        selectPostById(state, postId.toString()),
-      )
-    : undefined;
+  const post = useSelector((state: RootState) =>
+    selectPostById(state, postId.toString()),
+  );
   if (!post) {
     return (
       <section>

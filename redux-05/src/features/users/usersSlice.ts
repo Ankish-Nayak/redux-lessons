@@ -10,21 +10,20 @@ export interface UserI {
   name: string;
 }
 
-export const fetchUsers = createAsyncThunk("users/fetchUsers", async () => {
-  try {
-    const response = await axios.get(USERS_URL);
-    console.log(response);
-    return [...response.data];
-  } catch (e) {
-    return e.message;
-  }
-});
+export const fetchUsers = createAsyncThunk(
+  "users/fetchUsers",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(USERS_URL);
+      console.log(response);
+      return [...response.data];
+    } catch (e) {
+      return rejectWithValue(e);
+    }
+  },
+);
 
-const initialState: UserI[] = [
-  // { id: "0", name: "Ankish Nayak" },
-  // { id: "1", name: "Aastha Nayak" },
-  // { id: "2", name: "Amber Nayak" },
-];
+const initialState: UserI[] = [];
 
 const usersSlice = createSlice({
   name: "users",
@@ -33,7 +32,7 @@ const usersSlice = createSlice({
   extraReducers(builder) {
     builder.addCase(
       fetchUsers.fulfilled,
-      (state, action: PayloadAction<{ id: number; name: string }[]>) => {
+      (_, action: PayloadAction<{ id: number; name: string }[]>) => {
         console.log(action.payload);
         return action.payload.map((user) => {
           return {

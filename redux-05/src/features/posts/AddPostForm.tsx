@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { UserI, selectAllUsers } from "../users/usersSlice";
-import { addNewPost, postAdded } from "./postsSlice";
+import { addNewPost } from "./postsSlice";
 import { useNavigate } from "react-router-dom";
 import { AppDispatch } from "../../app/store";
 

@@ -1,7 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import { selectUsersById } from "./usersSlice";
 import { useSelector } from "react-redux";
-import { selectAllPosts, selectPostsByUser } from "../posts/postsSlice";
+import { selectPostsByUser } from "../posts/postsSlice";
 import { RootState } from "../../app/store";
 
 const UserPage = () => {
