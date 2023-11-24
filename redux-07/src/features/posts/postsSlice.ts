@@ -28,33 +28,27 @@ export interface PostsI {
   posts: PostI[];
   status: "idle" | "loading" | "succeeded" | "failed";
   error: string | undefined | null;
-  count: number;
+}
+
+export interface PostApiResI {
+  id: number;
+  userId: number;
+  title: string;
+  body: string;
+  date?: string;
+  reactions?: ReactionsI;
 }
 
 const postsAdapter = createEntityAdapter<PostI>({
   sortComparer: (a, b) => b.date.localeCompare(a.date),
 });
-const initialState = postsAdapter.getInitialState<PostsI>({
-  posts: [],
-  status: "idle",
-  error: null,
-  count: 0,
-});
+const initialState = postsAdapter.getInitialState();
 
 export const extendedApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getPosts: builder.query({
+    getPosts: builder.query<EntityState<PostI>, void>({
       query: () => "/posts",
-      transformResponse: (
-        res: {
-          id: number;
-          userId: number;
-          title: string;
-          body: string;
-          date?: string;
-          reactions?: ReactionsI;
-        }[],
-      ) => {
+      transformResponse: (res: PostApiResI[]) => {
         let min = 1;
         const loadedPosts = res.map((post) => {
           if (!post?.date)
@@ -82,14 +76,18 @@ export const extendedApiSlice = apiSlice.injectEndpoints({
 
         return postsAdapter.setAll(initialState, loadedPosts);
       },
-      providesTags: (result: EntityState<PostI> & PostsI) => [
-        { type: "Post", id: "LIST" },
-        ...result.ids.map((id) => ({ type: "Post", id })),
-      ],
+      providesTags: (result) => {
+        return typeof result === "undefined"
+          ? [{ type: "Post", id: "LIST" }]
+          : [
+              { type: "Post", id: "LIST" },
+              ...result.ids.map((id) => ({ type: "Post" as const, id })),
+            ];
+      },
     }),
-    getPostsByUserId: builder.query({
+    getPostsByUserId: builder.query<EntityState<PostI>, string>({
       query: (id) => `/posts/?userId=${id}`,
-      transformResponse: (res) => {
+      transformResponse: (res: PostApiResI[]) => {
         let min = 1;
         const loadedPosts = res.map((post) => {
           if (!post?.date)
@@ -114,15 +112,15 @@ export const extendedApiSlice = apiSlice.injectEndpoints({
 
           return newPost;
         });
-
         return postsAdapter.setAll(initialState, loadedPosts);
       },
       porvidesTags: (result) => {
-        console.log(result);
-        return [...result.ids.map((id) => ({ type: "Post", id }))];
+        return typeof result === "undefined"
+          ? []
+          : [...result.ids.map((id) => ({ type: "Post" as const, id }))];
       },
     }),
-    addNewPost: builder.mutation({
+    addNewPost: builder.mutation<void, Omit<PostApiResI, "id">>({
       query: (initialPost) => ({
         url: "/posts",
         method: "POST",
@@ -141,7 +139,7 @@ export const extendedApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: [{ type: "Post", id: "LIST" }],
     }),
-    updatePost: builder.mutation({
+    updatePost: builder.mutation<void, PostApiResI>({
       query: (initialPost) => ({
         url: `/posts/${initialPost.id}`,
         method: "PUT",
@@ -152,7 +150,7 @@ export const extendedApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (_, __, arg) => [{ type: "Post", id: arg.id }],
     }),
-    deletePost: builder.mutation({
+    deletePost: builder.mutation<void, { id: string }>({
       query: ({ id }) => ({
         url: `/post/${id}`,
         method: "DELETE",
@@ -160,7 +158,13 @@ export const extendedApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (_, __, arg) => [{ type: "Post", id: arg.id }],
     }),
-    addReaction: builder.mutation({
+    addReaction: builder.mutation<
+      void,
+      {
+        postId: string;
+        reactions: ReactionsI;
+      }
+    >({
       query: ({ postId, reactions }) => ({
         url: `/posts/${postId}`,
         method: "PATCH",
@@ -212,6 +216,6 @@ export const {
   selectAll: selectAllPosts,
   selectById: selectPostById,
   selectIds: selectPostIds,
-} = postsAdapter.getSelectors(
-  (state: RootState) => selectPostsData(state) ?? initialState,
+} = postsAdapter.getSelectors<RootState>(
+  (state) => selectPostsData(state) ?? initialState,
 );

@@ -25,7 +25,11 @@ const AddPostForm = () => {
   const canSave = [title, content, userId].every(Boolean) && !isLoading;
   const onSavePostClicked = async () => {
     try {
-      await addNewPost({ title, body: content, userId }).unwrap();
+      await addNewPost({
+        title,
+        body: content,
+        userId: parseInt(userId as string),
+      }).unwrap();
 
       setTitle("");
       setContent("");

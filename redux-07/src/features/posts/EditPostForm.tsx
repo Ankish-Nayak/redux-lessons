@@ -46,10 +46,10 @@ const EditPostForm = () => {
     if (canSave) {
       try {
         await updatePost({
-          id: post.id,
+          id: parseInt(post.id),
           title,
           body: content,
-          userId,
+          userId: parseInt(post.userId as string),
         }).unwrap();
 
         setTitle("");

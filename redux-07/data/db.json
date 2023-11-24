@@ -869,6 +869,20 @@
       "body": "check one two three",
       "userId": 2,
       "date": "2022-04-26T23:03:52.299Z"
+    },
+    {
+      "title": "new Post",
+      "body": "New Content",
+      "userId": 4,
+      "date": "2023-11-24T05:45:54.643Z",
+      "reactions": {
+        "thumbsUp": 0,
+        "wow": 0,
+        "heart": 0,
+        "rocket": 0,
+        "coffee": 0
+      },
+      "id": 103
     }
   ]
 }

@@ -6,5 +6,6 @@ export const apiSlice = createApi({
     baseUrl: "http://localhost:3500",
   }),
   tagTypes: ["Post"],
-  endpoints: (builder) => ({}),
+  // @ts-expect-error  dfdfd
+  endpoints: (builder) => ({}), // eslint-disable-line
 });
