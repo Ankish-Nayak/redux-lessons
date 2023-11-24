@@ -59,6 +59,7 @@ const EditPostForm = () => {
           title,
           body: content,
           userId: parseInt(post.userId as string),
+          reactions: post.reactions,
         }).unwrap();
 
         setTitle("");
