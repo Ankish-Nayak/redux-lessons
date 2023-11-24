@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { useSelector } from "react-redux";
-import { UserI, selectAllUsers } from "../users/usersSlice";
+import { useGetUsersQuery } from "../users/usersSlice";
 import { useAddNewPostMutation } from "./postsSlice";
 import { useNavigate } from "react-router-dom";
 
@@ -12,8 +11,13 @@ const AddPostForm = () => {
   const [content, setContent] = useState("");
   const [userId, setUserId] = useState("");
 
-  const users = useSelector(selectAllUsers);
-
+  const {
+    data: users,
+    isLoading: isLoadingUser,
+    isError: isErrorUser,
+    isSuccess: isSuccessUser,
+    error: errorUser,
+  } = useGetUsersQuery("getUsers");
   const onAuthorChanged = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { target } = e;
     if (target) {
@@ -22,7 +26,8 @@ const AddPostForm = () => {
     }
   };
 
-  const canSave = [title, content, userId].every(Boolean) && !isLoading;
+  const canSave =
+    [title, content, userId].every(Boolean) && !isLoading && !isLoadingUser;
   const onSavePostClicked = async () => {
     try {
       await addNewPost({
@@ -41,13 +46,20 @@ const AddPostForm = () => {
     }
   };
 
-  const usersOptions = users.map((user: UserI) => {
-    return (
-      <option key={user.id} value={user.id}>
-        {user.name}
-      </option>
-    );
-  });
+  let usersOptions;
+  if (isLoadingUser) {
+    usersOptions = <p>Loading...</p>;
+  } else if (isSuccessUser) {
+    usersOptions = users.ids.map((id) => {
+      return (
+        <option key={id} value={id}>
+          {users.entities[id]?.name}
+        </option>
+      );
+    });
+  } else if (isErrorUser) {
+    usersOptions = <p>{JSON.stringify(errorUser)}</p>;
+  }
 
   return (
     <section>

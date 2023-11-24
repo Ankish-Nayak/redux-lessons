@@ -1,7 +1,7 @@
-import { PayloadAction, createSlice } from "@reduxjs/toolkit";
-import { RootState } from "../../app/store";
+import { EntityState, createEntityAdapter } from "@reduxjs/toolkit";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { apiSlice } from "../api/apiSlice";
 
 const USERS_URL = "https://jsonplaceholder.typicode.com/users";
 
@@ -15,7 +15,6 @@ export const fetchUsers = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(USERS_URL);
-      console.log(response);
       return [...response.data];
     } catch (e) {
       return rejectWithValue(e);
@@ -23,31 +22,29 @@ export const fetchUsers = createAsyncThunk(
   },
 );
 
-const initialState: UserI[] = [];
+const usersAdapter = createEntityAdapter<UserI>();
 
-const usersSlice = createSlice({
-  name: "users",
-  initialState,
-  reducers: {},
-  extraReducers(builder) {
-    builder.addCase(
-      fetchUsers.fulfilled,
-      (_, action: PayloadAction<{ id: number; name: string }[]>) => {
-        console.log(action.payload);
-        return action.payload.map((user) => {
-          return {
-            id: user.id.toString(),
-            name: user.name,
-          };
-        });
+const initialState = usersAdapter.getInitialState();
+
+export const usersApiSlice = apiSlice.injectEndpoints({
+  endpoints: (builder) => ({
+    getUsers: builder.query<EntityState<UserI>, string>({
+      query: () => "/users",
+      transformResponse(res: UserI[]) {
+        return usersAdapter.setAll(initialState, res);
       },
-    );
-  },
+      providesTags: (res) => {
+        return typeof res === "undefined"
+          ? [{ type: "User", id: "LIST" }]
+          : [
+              { type: "User", id: "LIST" },
+              ...res.ids.map((id) => ({ type: "User" as const, id })),
+            ];
+      },
+    }),
+  }),
 });
 
-export const selectAllUsers = (state: RootState) => state.users;
+export const { useGetUsersQuery } = usersApiSlice;
 
-export const selectUsersById = (state: RootState, userId: string) =>
-  state.users.find((user) => user.id === userId);
-
-export default usersSlice.reducer;
+export const selectUsersResult = usersApiSlice.endpoints.getUsers.select("");

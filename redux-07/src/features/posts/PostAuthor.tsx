@@ -1,15 +1,28 @@
-import { useSelector } from "react-redux";
-import { selectAllUsers } from "../users/usersSlice";
-import { UserI } from "../users/usersSlice";
+import { useGetUsersQuery } from "../users/usersSlice";
 import { Link } from "react-router-dom";
 
 const PostAuthor = ({ userId }: { userId: string | undefined }) => {
-  const users = useSelector(selectAllUsers);
-  const author = users.find((user: UserI) => user.id === userId);
-  if (typeof author === "undefined") {
-    return <span>"by Unknown author"</span>;
+  const { user: author, isLoading } = useGetUsersQuery("getUsers", {
+    selectFromResult: ({ data, isLoading }) => ({
+      user: data?.entities[userId as string],
+      isLoading,
+    }),
+  });
+
+  if (isLoading) {
+    return <p>Loading...</p>;
   }
-  return <span>by {<Link to={`/user/${userId}`}>{author.name}</Link>}</span>;
+
+  return (
+    <span>
+      by{" "}
+      {author ? (
+        <Link to={`/user/${userId}`}>{author.name}</Link>
+      ) : (
+        "Unknown author"
+      )}
+    </span>
+  );
 };
 
 export default PostAuthor;

@@ -8,7 +8,7 @@ import {
 } from "./postsSlice";
 import { RootState } from "../../app/store";
 import { useState } from "react";
-import { selectAllUsers } from "../users/usersSlice";
+import { useGetUsersQuery } from "../users/usersSlice";
 
 const EditPostForm = () => {
   const { postId } = useParams<{ postId: string }>() as { postId: string };
@@ -21,7 +21,15 @@ const EditPostForm = () => {
     selectPostById(state, postId.toString()),
   ) as PostI;
 
-  const users = useSelector((state: RootState) => selectAllUsers(state));
+  // const users = useSelector((state: RootState) => selectAllUsers(state));
+
+  const {
+    data: users,
+    isLoading: isLoadingUser,
+    isError,
+    isSuccess,
+    error,
+  } = useGetUsersQuery("getUsers");
 
   const [title, setTitle] = useState(post.title);
   const [content, setContent] = useState(post.content);
@@ -34,7 +42,6 @@ const EditPostForm = () => {
     );
   }
 
-  const canSave = [title, content, userId].every(Boolean) && !isLoading;
   const onTitleChanged = (e: React.ChangeEvent<HTMLInputElement>) =>
     setTitle(e.target.value);
   const onContentChanged = (e: React.ChangeEvent<HTMLTextAreaElement>) =>
@@ -42,6 +49,8 @@ const EditPostForm = () => {
   const onAuthorChanged = (e: React.ChangeEvent<HTMLSelectElement>) =>
     setUserId(e.target.value);
 
+  const canSave =
+    [title, content, userId].every(Boolean) && !isLoading && !isLoadingUser;
   const onSavePostClicked = async () => {
     if (canSave) {
       try {
@@ -62,13 +71,20 @@ const EditPostForm = () => {
     }
   };
 
-  const usersOptions = users.map((user) => {
-    return (
-      <option key={user.id} value={user.id}>
-        {user.name}
-      </option>
-    );
-  });
+  let usersOptions;
+  if (isLoadingUser) {
+    usersOptions = <p>Loading...</p>;
+  } else if (isSuccess) {
+    usersOptions = users.ids.map((id) => {
+      return (
+        <option key={id} value={id}>
+          {users.entities[id]?.name}
+        </option>
+      );
+    });
+  } else if (isError) {
+    usersOptions = <p>{JSON.stringify(error)}</p>;
+  }
 
   const onDeletePostClicked = async () => {
     try {

@@ -5,7 +5,7 @@ export const apiSlice = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: "http://localhost:3500",
   }),
-  tagTypes: ["Post"],
+  tagTypes: ["Post", "User"],
   // @ts-expect-error  dfdfd
   endpoints: (builder) => ({}), // eslint-disable-line
 });
